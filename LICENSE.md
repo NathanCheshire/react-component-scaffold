@@ -1,7 +1,9 @@
 # Custom License Agreement
 
 Effective Date: 08/06/2024
+
 Licensor: Nathan Cheshire
+
 Licensee: Nate Cheshire, Natche Group consulting
 
 ## 1. Grant of License
