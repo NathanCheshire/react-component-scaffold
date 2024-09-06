@@ -1,8 +1,8 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as vscode from "vscode";
-import { ActivationCommands } from "./ActivationCommands";
-import { ComponentSections } from "./ComponentSections";
+import { ActivationCommands } from "./enums/ActivationCommands";
+import { ComponentSections } from "./enums/ComponentSections";
 import { getConfiguredIndentation } from "./ConfigurationHelpers";
 import { createAndWrite, getFolderUri } from "./FileHelpers";
 import { getReactComponentName, shouldOverwriteFile } from "./InputHelpers";

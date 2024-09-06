@@ -1,3 +1,6 @@
+/**
+ * Sections to lay out comments for in the generated React component scaffold.
+ */
 export enum ComponentSections {
   Preconditions = "Preconditions",
   Constants = "Constants",
