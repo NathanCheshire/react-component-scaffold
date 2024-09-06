@@ -19,6 +19,15 @@
         "title": "Generate React Component"
       }
     ],
+    "configuration": {
+      "properties": {
+        "reactComponentScaffold.tabSize": {
+          "type": "number",
+          "default": 4,
+          "description": "Number of spaces to use for indentation"
+        }
+      }
+    },
     "menus": {
       "explorer/context": [
         {

@@ -5,6 +5,32 @@ import { ActivationCommands } from "./ActivationCommands";
 import { createAndWrite, getFolderUri } from "./FileHelpers";
 import { getReactComponentName, shouldOverwriteFile } from "./InputHelpers";
 import { vscodeError, vscodeInfo } from "./MessageHelpers";
+import { ComponentSections } from "./ComponentSections";
+
+const defaultNumTabs = 4;
+
+function generateComponentTemplate(componentName: string): string {
+  const config = vscode.workspace.getConfiguration("reactComponentScaffold");
+  const tabSize = config.get<number>("tabSize", defaultNumTabs);
+
+  const indent = " ".repeat(tabSize);
+
+  const sections = Object.values(ComponentSections)
+    .map((section) => `${indent}// ${section}`)
+    .join("\n\n");
+
+  const lines = [
+    "interface Props {}",
+    "",
+    `export default function ${componentName}({}: Props) {`,
+    sections,
+    "",
+    `${indent}return <></>`,
+    "}",
+  ];
+
+  return lines.join("\n");
+}
 
 async function generateReactComponentCommand(uri: vscode.Uri) {
   const outputUri = getFolderUri(uri);
@@ -22,29 +48,6 @@ async function generateReactComponentCommand(uri: vscode.Uri) {
     if (!shouldOverwrite) return;
   }
 
-  const componentTemplate = `
-interface Props {}
-
-export default function ${componentName}({}: Props) {
-// Preconditions
-
-// Constants
-
-// State
-
-// Hooks
-
-// Context
-
-// Memos
-
-// Effects
-
-// Functions
-
-return <></>;
-}`;
-
   async function onCreateSuccess() {
     vscodeInfo(`${componentName}.tsx created successfully.`);
     const document = await vscode.workspace.openTextDocument(filePath);
@@ -55,7 +58,12 @@ return <></>;
     vscodeError("Failed to create component: " + error.message);
   }
 
-  createAndWrite(filePath, componentTemplate, onCreateSuccess, onCreateError);
+  createAndWrite(
+    filePath,
+    generateComponentTemplate(componentName),
+    onCreateSuccess,
+    onCreateError
+  );
 }
 
 export function activate(context: vscode.ExtensionContext) {
