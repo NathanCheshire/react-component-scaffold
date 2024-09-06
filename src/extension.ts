@@ -2,18 +2,14 @@ import * as fs from "fs";
 import * as path from "path";
 import * as vscode from "vscode";
 import { ActivationCommands } from "./ActivationCommands";
+import { ComponentSections } from "./ComponentSections";
+import { getConfiguredIndentation } from "./ConfigurationHelpers";
 import { createAndWrite, getFolderUri } from "./FileHelpers";
 import { getReactComponentName, shouldOverwriteFile } from "./InputHelpers";
 import { vscodeError, vscodeInfo } from "./MessageHelpers";
-import { ComponentSections } from "./ComponentSections";
-
-const defaultNumTabs = 4;
 
 function generateComponentTemplate(componentName: string): string {
-  const config = vscode.workspace.getConfiguration("reactComponentScaffold");
-  const tabSize = config.get<number>("tabSize", defaultNumTabs);
-
-  const indent = " ".repeat(tabSize);
+  const indent = getConfiguredIndentation();
 
   const sections = Object.values(ComponentSections)
     .map((section) => `${indent}// ${section}`)
