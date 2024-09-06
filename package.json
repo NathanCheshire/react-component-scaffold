@@ -5,6 +5,7 @@
   "version": "0.0.1",
   "icon": "images/icon.png",
   "author": "Nate Cheshire",
+  "publisher": "Nate Cheshire",
   "private": true,
   "engines": {
     "vscode": "^1.93.0"
