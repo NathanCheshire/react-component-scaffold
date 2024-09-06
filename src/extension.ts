@@ -17,7 +17,10 @@ async function generateReactComponentCommand(uri: vscode.Uri) {
   }
 
   const filePath = path.join(uri.fsPath, `${componentName}.tsx`);
-  if (fs.existsSync(filePath) && !shouldOverwriteFile(componentName)) return;
+  if (fs.existsSync(filePath)) {
+    const shouldOverwrite = await shouldOverwriteFile(componentName);
+    if (!shouldOverwrite) return;
+  }
 
   const componentTemplate = `
 interface Props {}
