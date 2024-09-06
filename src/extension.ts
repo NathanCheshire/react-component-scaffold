@@ -1,77 +1,58 @@
 import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
+import { ActivationCommands } from "./commands";
+import { isValidFileName, isValidReactComponentName } from "./RegexHelpers";
+import { vscodeError, vscodeInfo } from "./MessageHelpers";
 
-const invalidChars = /[<>:"/\\|?*\u0000-\u001F]/g;
-const reservedNames = /^(con|prn|aux|nul|com[0-9]|lpt[0-9])$/i;
-const validReactComponentNameRegex = /^[A-Z][a-zA-Z0-9_]*$/;
-
-function isValidReactComponentName(name: string): boolean {
-  return validReactComponentNameRegex.test(name);
+function getFolderUri(uri: vscode.Uri): vscode.Uri | undefined {
+  if (uri) return uri;
+  const workspaceFolders = vscode.workspace.workspaceFolders;
+  if (!workspaceFolders) {
+    vscodeError("Could not find a valid workspace folder.");
+    return undefined;
+  }
+  return workspaceFolders[0].uri;
 }
 
-function isValidFileName(name: string): boolean {
-  if (invalidChars.test(name)) return false;
-  if (reservedNames.test(name)) return false;
-  return name.trim().length > 0;
+async function getComponentNameInput() {
+  return await vscode.window.showInputBox({
+    prompt: "Enter the component name",
+    placeHolder: "MyComponent",
+    validateInput: (value: string) => {
+      if (!isValidFileName(value)) {
+        return "Invalid file name. Please use a valid name for the file system.";
+      }
+      if (!isValidReactComponentName(value)) {
+        return "Invalid React component name. It should start with a capital letter and contain only alphanumeric characters and underscores.";
+      }
+      return null;
+    },
+  });
 }
 
 const command = async (uri: vscode.Uri) => {
-  // If uri is undefined, get the current workspace folder
-  if (!uri) {
-    const workspaceFolders = vscode.workspace.workspaceFolders;
-    if (!workspaceFolders) {
-      vscode.window.showErrorMessage("No workspace folder is open.");
-      return;
-    }
-    uri = workspaceFolders[0].uri;
+  const outputUri = getFolderUri(uri);
+  if (!outputUri) return;
+
+  const componentName = await getComponentNameInput();
+  if (!componentName) {
+    vscodeError("Component name is required.");
+    return;
   }
 
-  let componentName: string | undefined;
-  let filePath: string | undefined;
-
-  while (true) {
-    // Prompt for the component name
-    componentName = await vscode.window.showInputBox({
-      prompt: "Enter the component name",
-      placeHolder: "MyComponent",
-      validateInput: (value) => {
-        if (!isValidFileName(value)) {
-          return "Invalid file name. Please use a valid name for the file system.";
-        }
-        if (!isValidReactComponentName(value)) {
-          return "Invalid React component name. It should start with a capital letter and contain only alphanumeric characters and underscores.";
-        }
-        return null;
-      },
-    });
-
-    if (!componentName) {
-      vscode.window.showErrorMessage("Component name is required.");
-      return;
-    }
-
-    // Path to create the .tsx file
-    filePath = path.join(uri.fsPath, `${componentName}.tsx`);
-
-    // Check if file already exists
-    if (fs.existsSync(filePath)) {
-      const overwrite = await vscode.window.showQuickPick(["Yes", "No"], {
-        placeHolder: `${componentName}.tsx already exists. Overwrite?`,
-      });
-      if (overwrite === "Yes") {
-        break;
+  const filePath = path.join(uri.fsPath, `${componentName}.tsx`);
+  if (fs.existsSync(filePath)) {
+    const overwrite = await vscode.window.showQuickPick(
+      ["Overwrite", "Cancel"],
+      {
+        placeHolder: `${componentName}.tsx already exists.`,
       }
-      // If 'No', the loop continues and asks for a new name
-    } else {
-      break; // File doesn't exist, so we can proceed
-    }
+    );
+    if (overwrite === "Cancel") return;
   }
 
-  // At this point, we're guaranteed to have a valid filePath and componentName
-
-  // Component template with section comments
-  const template = `
+  const componentTemplate = `
 interface Props {}
 
 export default function ${componentName}({}: Props) {
@@ -94,27 +75,26 @@ export default function ${componentName}({}: Props) {
 return <></>;
 }`;
 
-  // Write the .tsx file
-  fs.writeFile(filePath, template, async (err) => {
-    if (err) {
-      vscode.window.showErrorMessage(
-        "Failed to create component: " + err.message
-      );
-    } else {
-      vscode.window.showInformationMessage(
-        `${componentName}.tsx created successfully.`
-      );
+  fs.writeFile(
+    filePath,
+    componentTemplate,
+    async (err: NodeJS.ErrnoException | null) => {
+      if (err) {
+        vscodeError("Failed to create component: " + err.message);
+      } else {
+        vscodeInfo(`${componentName}.tsx created successfully.`);
 
-      // Open the newly created file
-      const document = await vscode.workspace.openTextDocument(filePath);
-      await vscode.window.showTextDocument(document);
+        // Open the newly created file
+        const document = await vscode.workspace.openTextDocument(filePath);
+        await vscode.window.showTextDocument(document);
+      }
     }
-  });
+  );
 };
 
 export function activate(context: vscode.ExtensionContext) {
   let disposable = vscode.commands.registerCommand(
-    "extension.generateReactComponent",
+    ActivationCommands.GenerateReactComponent,
     command
   );
 
