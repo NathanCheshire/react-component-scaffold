@@ -3,6 +3,7 @@
   "displayName": "React Component Scaffold",
   "description": "A quick action to create a React functional component to start from",
   "version": "0.0.1",
+  "icon": "images/icon.png",
   "author": "Nate Cheshire",
   "private": true,
   "engines": {
