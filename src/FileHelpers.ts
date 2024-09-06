@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { vscodeError } from "./MessageHelpers";
-
+import * as fs from "fs";
 /**
  * Returns the URI of the folder to create a file inside of.
  * If this function was not invoked inside of the context of a folder,
@@ -17,4 +17,23 @@ export function getFolderUri(uri: vscode.Uri): vscode.Uri | undefined {
     return undefined;
   }
   return workspaceFolders[0].uri;
+}
+
+export function createAndWrite(
+  filepath: string,
+  contents: string,
+  onSuccess?: () => void,
+  onError?: (error: any) => void
+) {
+  fs.writeFile(
+    filepath,
+    contents,
+    async (err: NodeJS.ErrnoException | null) => {
+      if (err) {
+        onError?.(err);
+      } else {
+        onSuccess?.();
+      }
+    }
+  );
 }

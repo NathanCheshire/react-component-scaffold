@@ -2,11 +2,11 @@ import * as fs from "fs";
 import * as path from "path";
 import * as vscode from "vscode";
 import { ActivationCommands } from "./ActivationCommands";
-import { getReactComponentName } from "./InputHelpers";
+import { createAndWrite, getFolderUri } from "./FileHelpers";
+import { getReactComponentName, shouldOverwriteFile } from "./InputHelpers";
 import { vscodeError, vscodeInfo } from "./MessageHelpers";
-import { getFolderUri } from "./FileHelpers";
 
-async function command(uri: vscode.Uri) {
+async function generateReactComponentCommand(uri: vscode.Uri) {
   const outputUri = getFolderUri(uri);
   if (!outputUri) return;
 
@@ -17,15 +17,7 @@ async function command(uri: vscode.Uri) {
   }
 
   const filePath = path.join(uri.fsPath, `${componentName}.tsx`);
-  if (fs.existsSync(filePath)) {
-    const overwrite = await vscode.window.showQuickPick(
-      ["Overwrite", "Cancel"],
-      {
-        placeHolder: `${componentName}.tsx already exists.`,
-      }
-    );
-    if (overwrite === "Cancel") return;
-  }
+  if (fs.existsSync(filePath) && !shouldOverwriteFile(componentName)) return;
 
   const componentTemplate = `
 interface Props {}
@@ -50,27 +42,23 @@ export default function ${componentName}({}: Props) {
 return <></>;
 }`;
 
-  fs.writeFile(
-    filePath,
-    componentTemplate,
-    async (err: NodeJS.ErrnoException | null) => {
-      if (err) {
-        vscodeError("Failed to create component: " + err.message);
-      } else {
-        vscodeInfo(`${componentName}.tsx created successfully.`);
+  async function onCreateSuccess() {
+    vscodeInfo(`${componentName}.tsx created successfully.`);
+    const document = await vscode.workspace.openTextDocument(filePath);
+    await vscode.window.showTextDocument(document);
+  }
 
-        // Open the newly created file
-        const document = await vscode.workspace.openTextDocument(filePath);
-        await vscode.window.showTextDocument(document);
-      }
-    }
-  );
+  function onCreateError(error: any) {
+    vscodeError("Failed to create component: " + error.message);
+  }
+
+  createAndWrite(filePath, componentTemplate, onCreateSuccess, onCreateError);
 }
 
 export function activate(context: vscode.ExtensionContext) {
   let disposable = vscode.commands.registerCommand(
     ActivationCommands.GenerateReactComponent,
-    command
+    generateReactComponentCommand
   );
 
   context.subscriptions.push(disposable);
