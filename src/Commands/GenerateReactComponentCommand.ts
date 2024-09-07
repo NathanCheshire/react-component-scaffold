@@ -23,7 +23,7 @@ function generateComponentTemplate(componentName: string): string {
     `export default function ${componentName}({}: Props) {`,
     sections,
     "",
-    `${indent}return <></>`,
+    `${indent}return <></>;`,
     "}",
   ];
 
