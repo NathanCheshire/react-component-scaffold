@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { defaultComponentSections } from "./enums/ComponentSections";
 
 const extensionName = "reactComponentScaffold";
 const defaultNumTabs = 4;
@@ -16,4 +17,11 @@ export function getExtensionConfig(): vscode.WorkspaceConfiguration {
 export function getConfiguredIndentation() {
   const tabSize = getExtensionConfig().get<number>("tabSize", defaultNumTabs);
   return " ".repeat(tabSize);
+}
+
+/**
+ * Returns the configured component sections.
+ */
+export function getComponentSections() {
+  return getExtensionConfig().get("sections", defaultComponentSections);
 }

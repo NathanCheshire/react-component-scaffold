@@ -1,9 +1,11 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as vscode from "vscode";
-import { getConfiguredIndentation } from "../ConfigurationHelpers";
-import { ComponentSections } from "../enums/ComponentSections";
-import { getFolderUri, createAndWrite } from "../FileHelpers";
+import {
+  getComponentSections,
+  getConfiguredIndentation,
+} from "../ConfigurationHelpers";
+import { createAndWrite, getFolderUri } from "../FileHelpers";
 import { getReactComponentName, shouldOverwriteFile } from "../InputHelpers";
 import { vscodeError, vscodeInfo } from "../MessageHelpers";
 
@@ -13,7 +15,8 @@ import { vscodeError, vscodeInfo } from "../MessageHelpers";
 function generateComponentTemplate(componentName: string): string {
   const indent = getConfiguredIndentation();
 
-  const sections = Object.values(ComponentSections)
+  const sections = getComponentSections()
+    .sort((a, b) => a.ordinal - b.ordinal)
     .map((section) => `${indent}// ${section}`)
     .join("\n\n");
 

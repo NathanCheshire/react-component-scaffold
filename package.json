@@ -2,7 +2,7 @@
   "name": "react-component-scaffold",
   "displayName": "React Component Scaffold",
   "description": "A quick action to create a React functional component to start from",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "icon": "images/icon.png",
   "author": "Nate Cheshire",
   "publisher": "Nate Cheshire",
@@ -32,6 +32,44 @@
           "type": "number",
           "default": 4,
           "description": "Number of spaces to use for indentation"
+        },
+        "reactComponentScaffold.sections": {
+          "type": "array",
+          "default": [
+            {
+              "name": "Preconditions",
+              "order": 1
+            },
+            {
+              "name": "Constants",
+              "order": 2
+            },
+            {
+              "name": "State",
+              "order": 3
+            },
+            {
+              "name": "Hooks",
+              "order": 4
+            },
+            {
+              "name": "Context",
+              "order": 5
+            },
+            {
+              "name": "Memos",
+              "order": 6
+            },
+            {
+              "name": "Effects",
+              "order": 7
+            },
+            {
+              "name": "Functions",
+              "order": 8
+            }
+          ],
+          "description": "Customize the sections in the React component scaffold"
         }
       }
     },
