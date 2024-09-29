@@ -17,7 +17,7 @@ function generateComponentTemplate(componentName: string): string {
 
   const sections = getComponentSections()
     .sort((a, b) => a.ordinal - b.ordinal)
-    .map((section) => `${indent}// ${section}`)
+    .map((section) => `${indent}// ${section.name}`)
     .join("\n\n");
 
   const lines = [
@@ -42,10 +42,8 @@ export async function generateReactComponentCommand(uri: vscode.Uri) {
   if (!outputUri) return;
 
   const componentName = await getReactComponentName();
-  if (!componentName) {
-    vscodeError("Component name is required.");
-    return;
-  }
+  // Nothing provided so probably purposeful cancel event
+  if (!componentName) return;
 
   const filePath = path.join(uri.fsPath, `${componentName}.tsx`);
   if (fs.existsSync(filePath)) {
