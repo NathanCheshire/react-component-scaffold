@@ -13,6 +13,7 @@ export async function getReactComponentName() {
       if (!isValidFileName(value)) {
         return "Invalid file name. Please use a valid name for the file system.";
       }
+
       if (!isValidReactComponentName(value)) {
         return "Invalid React component name. It should start with a capital letter and contain only alphanumeric characters and underscores.";
       }

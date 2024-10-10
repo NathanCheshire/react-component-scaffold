@@ -8,8 +8,7 @@ import {
 import { createAndWrite, getFolderUri } from "../FileHelpers";
 import { getReactComponentName, shouldOverwriteFile } from "../InputHelpers";
 import { vscodeError, vscodeInfo } from "../MessageHelpers";
-
-const extension = ".tsx";
+import { getComponentFileName, getSafeComponentName } from "../RegexHelpers";
 
 /**
  * Generates the contents for the new component file.
@@ -35,11 +34,6 @@ function generateComponentTemplate(componentName: string): string {
   return lines.join("\n");
 }
 
-function getComponentFileName(componentName: string): string {
-  const endsWithTsx = componentName.endsWith(extension);
-  return endsWithTsx ? componentName : componentName + extension;
-}
-
 /**
  * Obtains a valid URI and requests a name for the React component scaffold from the user.
  * Once acquired and validated, the component is generated and opened.
@@ -48,14 +42,16 @@ export async function generateReactComponentCommand(uri: vscode.Uri) {
   const outputUri = getFolderUri(uri);
   if (!outputUri) return;
 
-  const componentName = await getReactComponentName();
+  const userInput = await getReactComponentName();
   // Nothing provided so probably purposeful cancel event
-  if (!componentName) return;
+  if (!userInput) return;
 
-  const componentFilename = getComponentFileName(componentName);
+  const componentFilename = getComponentFileName(userInput);
+  const componentName = getSafeComponentName(userInput);
+
   const filePath = path.join(uri.fsPath, componentFilename);
   if (fs.existsSync(filePath)) {
-    const shouldOverwrite = await shouldOverwriteFile(componentName);
+    const shouldOverwrite = await shouldOverwriteFile(userInput);
     if (!shouldOverwrite) return;
   }
 
