@@ -9,6 +9,8 @@ import { createAndWrite, getFolderUri } from "../FileHelpers";
 import { getReactComponentName, shouldOverwriteFile } from "../InputHelpers";
 import { vscodeError, vscodeInfo } from "../MessageHelpers";
 
+const extension = ".tsx";
+
 /**
  * Generates the contents for the new component file.
  */
@@ -33,6 +35,11 @@ function generateComponentTemplate(componentName: string): string {
   return lines.join("\n");
 }
 
+function getComponentFileName(componentName: string): string {
+  const endsWithTsx = componentName.endsWith(extension);
+  return endsWithTsx ? componentName : componentName + extension;
+}
+
 /**
  * Obtains a valid URI and requests a name for the React component scaffold from the user.
  * Once acquired and validated, the component is generated and opened.
@@ -45,20 +52,23 @@ export async function generateReactComponentCommand(uri: vscode.Uri) {
   // Nothing provided so probably purposeful cancel event
   if (!componentName) return;
 
-  const filePath = path.join(uri.fsPath, `${componentName}.tsx`);
+  const componentFilename = getComponentFileName(componentName);
+  const filePath = path.join(uri.fsPath, componentFilename);
   if (fs.existsSync(filePath)) {
     const shouldOverwrite = await shouldOverwriteFile(componentName);
     if (!shouldOverwrite) return;
   }
 
   async function onCreateSuccess() {
-    vscodeInfo(`${componentName}.tsx created successfully.`);
+    vscodeInfo(`${componentFilename} created successfully.`);
     const document = await vscode.workspace.openTextDocument(filePath);
     await vscode.window.showTextDocument(document);
   }
 
-  function onCreateError(error: any) {
-    vscodeError("Failed to create component: " + error.message);
+  function onCreateError(error: NodeJS.ErrnoException) {
+    vscodeError(
+      `Failed to create component at file: ${componentFilename}, error message: ${error.message}`
+    );
   }
 
   createAndWrite(

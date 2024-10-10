@@ -23,7 +23,7 @@ export function createAndWrite(
   filepath: string,
   contents: string,
   onSuccess?: () => void,
-  onError?: (error: any) => void
+  onError?: (error: NodeJS.ErrnoException) => void
 ) {
   fs.writeFile(
     filepath,
